@@ -1,0 +1,8 @@
+pip 
+selenium
+pyvirtualdisplay
+requests
+beautifulsoup4
+setuptools
+redis
+pandas

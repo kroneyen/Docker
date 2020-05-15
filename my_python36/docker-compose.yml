@@ -1,0 +1,80 @@
+version: '3.3'
+
+services:
+  python:
+    ## the name by self
+    #image: centos:latest
+    build : 
+       context : ./conf
+       dockerfile : Dockerfile
+    restart: always
+    networks:
+      - inter
+    #container_name : 'my_python36'
+      # Where our data will be persisted
+    tty : true
+    volumes:
+      - ./deploy/python_dir:/root/python_dir
+    links:
+      - db
+      - redis
+    environment:
+      TZ: Asia/Taipei
+    #ports:
+    #  - '9922:22'
+    #command: /bin/sh -c /root/python_dir/script/crontab_default.sh
+   
+  redis:
+    image: redis
+    # because redis image is exist
+    build : 
+       context : ./deploy/redis
+       dockerfile : Dockerfile
+    restart: always
+    networks:
+      - inter
+    #container_name : 'my_redis'                      
+    ports:  
+      - '63799:6379'
+    volumes:
+      - ./deploy/redis/data/:/data
+      - ./deploy/redis/redis.conf:/etc/redis/redis.conf
+    command: redis-server /etc/redis/redis.conf
+    #configs:
+    #  - source: my_redis_cnf
+    #    target: /etc/redis
+
+  db:
+    image: mariadb:10.4.12
+    restart: always
+    networks:
+      - inter
+    #container_name : 'my_db'    
+    #configs:
+    #  - source: my_mairadb_cnf
+    #    target: /etc
+    ports:
+      - '33066:3306'
+    volumes:
+      - ./deploy/mysql/data:/var/lib/mysql
+      - ./deploy/mysql/conf/my.cnf:/etc/my.cnf
+    #command: mysqld_safe /etc/my.cnf
+
+    environment:
+      MYSQL_ROOT_PASSWORD: qazxsw
+      MYSQL_DATABASE: krone
+      #MYSQL_USER: dba
+      #MYSQL_PASSWORD: dbadba
+      MYSQL_USER: "${DB_USER}"
+      MYSQL_PASSWORD: "${DB_PW}"
+      TZ: Asia/Taipei
+    
+
+networks:
+  inter:
+
+#configs:
+#   my_redis_cnf:
+#     file: ./deploy/redis/redis.conf
+#   my_mairadb_cnf:
+#     file: ./deploy/mysql/conf/my.cnf
